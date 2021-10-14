@@ -1,9 +1,8 @@
-import React from 'react'
+import React from "react";
 import BigTable from "./components/BigTable";
 
 const App = () => {
-  return <BigTable />
-  
-}
+  return <BigTable />;
+};
 
-export default App
+export default App;

@@ -29,7 +29,6 @@ const InnerBlock = styled.div`
     `
     width:${props.size}px;
     height:${props.size}px;
-
   `}
   box-sizing:border-box;
 `;

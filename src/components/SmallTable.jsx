@@ -4,7 +4,7 @@ import styled from "styled-components";
 import { FiCircle, FiX } from "react-icons/fi";
 
 const WrapperWrapper = styled.div`
-  padding: 20px;
+  position: relative;
 `;
 
 const Wrapper = styled.table`
@@ -37,29 +37,48 @@ const InnerBlock = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  ${(props) =>
-    props.size &&
-    `
-    width:${(props.size - 10) / 3}px;
-    height:${(props.size - 10) / 3}px;
-  `}
 
   ${(p) =>
-    p.hover &&
-    props.size &&
-    `
-    width:${props.size / 3}px !important;
-    height:${props.size / 3}px !important;
+    p.hover
+      ? `
+    width:${p.size / 3}px;
+    height:${p.size / 3}px;
+  `
+      : `
+    width:${(p.size - 10) / 3}px;
+    height:${(p.size - 10) / 3}px;
   `}
+  transition: width height 0.5s;
+`;
 
-  transition:width height .5s;
+const Overlay = styled.div`
+  left: 0;
+  top: 0;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(33, 34, 38, 0);
+  ${(p) => {
+    if (!p.active) {
+      return `background: rgba(33, 34, 38, 0.7);`;
+    } else {
+      return `opacity:0.5;`;
+    }
+  }}
+
+  transition: background 0.2;
 `;
 
 export default ({ size }) => {
   const [mouseInside, setMouseInside] = React.useState(false);
+  const show = true;
 
   return (
     <WrapperWrapper
+      size={size}
       onMouseEnter={() => {
         setMouseInside(true);
       }}
@@ -67,6 +86,14 @@ export default ({ size }) => {
         setMouseInside(false);
       }}
     >
+      <Overlay active={mouseInside}>
+        <FiX
+          style={!show && { display: `none` }}
+          size={size + 40}
+          color={`#f14666`}
+          strokeWidth={0.5}
+        />
+      </Overlay>
       <Wrapper>
         {new Array(3).fill(0).map(() => (
           <Row hover={mouseInside}>

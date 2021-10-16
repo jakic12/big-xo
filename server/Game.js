@@ -11,8 +11,11 @@ class Game {
 
     //playtime vars
     this.started = false;
+    this.initialized = false; // has the first field been selected?
     this.currentBig = undefined; //coords
     this.currentPlayer;
+    this.sockets = [];
+    this.activeSmall = [];
   }
 }
 
@@ -26,6 +29,8 @@ class BigField {
 
 class SmallField {
   constructor() {
+    this.won = false; //1 2 or false
+    this.full = false;
     this.field = new Array(3).fill(0).map(() => new Array(3).fill(false));
   }
 }

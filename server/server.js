@@ -193,9 +193,21 @@ const calculateMove = (position, gameState, socketsToInform) => {
   const smallWinner = checkWin(gameState.field.field[position[0]][position[1]].field);
   gameState.field.field[position[0]][position[1]].won = smallWinner;
 
-  const bigWinner = checkWin(gameState.field.field, x => x.won);
+  let bigWinner = checkWin(gameState.field.field, x => x.won);
 
-  const socketPayload = {position, value:gameState.currentPlayer + 1, newCurrentPlayer , newActiveSmall: gameState.activeSmall, smallWinner, bigWinner};
+  const smallFull = checkFull(gameState.field.field[position[0]][position[1]].field);
+  gameState.field.field[position[0]][position[1]].full = smallFull;
+  const bigFull = checkFull(gameState.field.field, x => x.won || x.full);
+
+  if((bigWinner == 0 || !bigWinner) && bigFull){
+    bigWinner = -1;
+  }
+
+  if(gameState.field.field[gameState.activeSmall[0]][gameState.activeSmall[1]].full){
+    gameState.activeSmall = [];
+  }
+
+  const socketPayload = {position, value:gameState.currentPlayer + 1, newCurrentPlayer , newActiveSmall: gameState.activeSmall, smallWinner, bigWinner, smallFull};
   socketsToInform.forEach(socket => socket.emit("move", socketPayload));
 
   gameState.currentPlayer = newCurrentPlayer;
@@ -229,20 +241,32 @@ const checkWin = (arr, valueFunction /* mapping from (arr[i][j]) -> (playerIndex
   }
 
   let win = true;
-  for(let t = 0; t < 3; t++){
+  for(let t = 0; t < arr.length; t++){
     if(valueFunction(arr[0][0]) != valueFunction(arr[t][t]))
       win = false;
   }
   if(win) return valueFunction(arr[0][0]);
 
   win = true;
-  for(let t = 0; t < 3; t++){
+  for(let t = 0; t < arr.length; t++){
     if(valueFunction(arr[0][2]) != valueFunction(arr[t][2- t]))
       win = false;
   }
   if(win) return valueFunction(arr[0][2]);
 
   return 0;
+}
+
+const checkFull = (arr, valueFunction) => {
+  if(!valueFunction) valueFunction = x => x;
+  for(let i = 0; i < arr.length; i++){
+    for(let j = 0; j < arr.length; j++){
+      if(!valueFunction(arr[i][j]) || valueFunction(arr[i][j]) == 0)
+        return false;
+    }
+  }
+
+  return true;
 }
 
 server.listen(port, () => {

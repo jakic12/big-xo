@@ -120,7 +120,7 @@ export default ({ size, pos, socket }) => {
             {smallGridData.field[i].map((__, j) => (
               <Column hover={mouseInside}>
                 <InnerBlock
-                  isClickable={isMyTurn && currentActiveSmall}
+                  isClickable={smallGridData.field[i][j] == 0 && isMyTurn && currentActiveSmall}
                   size={size}
                   hover={mouseInside}
                   onClick={() => {

@@ -62,6 +62,7 @@ export default ({ socket }) => {
     <BigTable socket={socket} />
     {(gameState.winner != 0 && gameState.winner && gameState.winner != false) && <>
       {gameState.players.indexOf(lps.playerId) == gameState.winner - 1 && <WinnerOverlay style={{color:`#2ecc71`}}>You won :)</WinnerOverlay>}
+      {gameState.winner == -1 && <WinnerOverlay style={{color:`#2ecc71`}}>It's a tie :/</WinnerOverlay>}
       {gameState.players.indexOf(lps.playerId) != gameState.winner - 1 && <WinnerOverlay style={{color:`#f14666`}}>You lost :(</WinnerOverlay>}
     </>}
   </>;

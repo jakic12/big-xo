@@ -42,7 +42,6 @@ app.post("/createGame", (req, res) => {
 
 app.get("/game/:gameId", (req, res) => {
   const playerId = req.headers.playerid;
-  console.log(req);
   const gameId = req.params.gameId;
   if (!gameId) {
     res.status(400).json({ err: "gameId param missing" });
@@ -81,6 +80,9 @@ app.get("/game/:gameId", (req, res) => {
 io.on("connection", (socket) => {
   console.log("a user connected");
 
+  const socketId = uuidv4();
+  socket.socketId = socketId;
+
   socket.on("subscribe_player", (payload) => {
     const { playerId, gameId } = payload;
     console.log(payload);
@@ -110,6 +112,11 @@ io.on("connection", (socket) => {
         games[gameId].sockets[1] = socket;
         console.log(`${gameId} - subscribed player 1 socket`);
 
+        socket.gameId = gameId;
+        socket.socketIndex = 1;
+
+        console.log(socket.gameId);
+
         if (games[gameId].sockets[0]) {
           games[gameId].sockets[0].emit("game_start");
           console.log(`game_start sent!`);
@@ -130,22 +137,113 @@ io.on("connection", (socket) => {
         return;
       }
     } else {
-      const indexOfPlayer = (games[gameId]?.players || []).indexOf(playerId);
+      const indexOfPlayer = (games[gameId] && games[gameId].players || []).indexOf(playerId);
       if (indexOfPlayer != -1) {
         console.log(`${gameId} - subscribed player ${indexOfPlayer} socket`);
         games[gameId].sockets[indexOfPlayer] = socket;
+        socket.gameId = gameId;
+        socket.socketIndex = indexOfPlayer;
       } else {
         console.error(`${playerId} is not in ${gameId}`);
       }
     }
   });
 
-  //TODO: handle move
+  socket.on("submit_move", (payload) => {
+    const {position} = payload;
 
-  //socket.on("move");
+    console.log("move");
+    console.log(socket.socketId, games[socket.gameId].activeSmall.length != 0);
+
+
+    if(!socket.gameId || !games[socket.gameId] || !("socketIndex" in socket) || !games[socket.gameId].sockets[socket.socketIndex] || games[socket.gameId].sockets[socket.socketIndex].socketId != socket.socketId || socket.socketIndex != games[socket.gameId].currentPlayer || (games[socket.gameId].activeSmall.length != 0 && (position[0] != games[socket.gameId].activeSmall[0] || position[1] != games[socket.gameId].activeSmall[1]))){
+
+      if(!games[socket.gameId].sockets[socket.socketIndex]){
+        console.log("fuck 1");
+      }else if(games[socket.gameId].sockets[socket.socketIndex].socketId != socket.socketId){
+        console.log("fuck 2");
+      }else if(socket.socketIndex != games[socket.gameId].currentPlayer){
+        console.log("fuck 3");
+      }else if((games[socket.gameId].activeSmall.length != 0 && (position[0] != games[socket.gameId].activeSmall[0] || position[1] != games[socket.gameId].activeSmall[1]))){
+        console.log("fuck 4");
+      }
+
+      console.log("submit_move_failed", games[socket.gameId].activeSmall.length != 0);
+      socket.emit("submit_move_failed", {err: `something in the socket saving system failed (probably, idk)`});
+      return;
+    }
+
+    games[socket.gameId] = calculateMove(position, games[socket.gameId], games[socket.gameId].sockets);
+  });
 });
 
 // -------------- SOCKET --------------
+
+
+const calculateMove = (position, gameState, socketsToInform) => {
+  if(gameState.field.field[position[0]][position[1]].field[position[2]][position[3]] != 0){
+    return {err:`field is not empty`};
+  }
+
+  gameState.field.field[position[0]][position[1]].field[position[2]][position[3]] = gameState.currentPlayer + 1;
+  newCurrentPlayer = (gameState.currentPlayer + 1)%2;
+  gameState.activeSmall = position.slice(2,4);
+
+
+  const smallWinner = checkWin(gameState.field.field[position[0]][position[1]].field);
+  gameState.field.field[position[0]][position[1]].won = smallWinner;
+
+  const bigWinner = checkWin(gameState.field.field, x => x.won);
+
+  const socketPayload = {position, value:gameState.currentPlayer + 1, newCurrentPlayer , newActiveSmall: gameState.activeSmall, smallWinner, bigWinner};
+  socketsToInform.forEach(socket => socket.emit("move", socketPayload));
+
+  gameState.currentPlayer = newCurrentPlayer;
+  return gameState;
+}
+
+const checkWin = (arr, valueFunction /* mapping from (arr[i][j]) -> (playerIndex) */) => {
+  if(!valueFunction)
+    valueFunction = x => x;
+
+  for(let i = 0; i < arr.length; i++){
+    if(valueFunction(arr[i][0]) != 0){
+      let win = true;
+      for(let t = 0; t < 3; t++){
+        if(valueFunction(arr[i][0]) != valueFunction(arr[i][t]))
+          win = false;
+      }
+      if(win) return valueFunction(arr[i][0]);
+    }
+  }
+
+  for(let j = 0; j < arr[0].length; j++){
+    if(valueFunction(arr[0][j]) != 0){
+      let win = true;
+      for(let t = 0; t < 3; t++){
+        if(valueFunction(arr[0][j]) != valueFunction(arr[t][j]))
+          win = false;
+      }
+      if(win) return valueFunction(arr[0][j]);
+    }
+  }
+
+  let win = true;
+  for(let t = 0; t < 3; t++){
+    if(valueFunction(arr[0][0]) != valueFunction(arr[t][t]))
+      win = false;
+  }
+  if(win) return valueFunction(arr[0][0]);
+
+  win = true;
+  for(let t = 0; t < 3; t++){
+    if(valueFunction(arr[0][2]) != valueFunction(arr[t][2- t]))
+      win = false;
+  }
+  if(win) return valueFunction(arr[0][2]);
+
+  return 0;
+}
 
 server.listen(port, () => {
   console.log(`Server listening on port: ${port}`);

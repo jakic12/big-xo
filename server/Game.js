@@ -29,9 +29,9 @@ class BigField {
 
 class SmallField {
   constructor() {
-    this.won = false; //1 2 or false
+    this.won = 0; //1 2 or 0
     this.full = false;
-    this.field = new Array(3).fill(0).map(() => new Array(3).fill(false));
+    this.field = new Array(3).fill(0).map(() => new Array(3).fill(0));
   }
 }
 

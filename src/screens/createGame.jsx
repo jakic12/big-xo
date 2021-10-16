@@ -1,9 +1,13 @@
-import React from "react";
+import React, { useEffect } from "react";
 import styled from "styled-components";
 import { useSelector, useDispatch } from "react-redux";
 import Loader from "react-loader-spinner";
 import { createGame } from "../redux/helpers";
 import { Redirect } from "react-router-dom";
+import { resetData } from "../redux/game_state_slice";
+import { resetState } from "../redux/local_player_stuff";
+
+import ClickToSelect from "@mapbox/react-click-to-select"
 
 const Wrapper = styled.div`
   display: flex;
@@ -25,9 +29,23 @@ const GreenButton = styled.div`
   }
 `;
 
+const AsLink = styled.div`
+  text-decoration: underline;
+  margin: 20px;
+  color: #3498db;
+  background: rgba(255,255,255,0.1);
+  padding: 5px;
+  border-radius: .3em;
+`;
+
 export default ({ socket }) => {
   const local_player_stuff = useSelector((state) => state.lps);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    dispatch(resetData());
+    dispatch(resetState());
+  }, [])
 
   return (
     <Wrapper>
@@ -41,7 +59,7 @@ export default ({ socket }) => {
         <div>waiting for other player...</div>
       )}
       {local_player_stuff.createdGame && (
-        <div>{local_player_stuff.createdGameId}</div>
+        <ClickToSelect><AsLink>{`${window.location.href}game/${local_player_stuff.createdGameId}`}</AsLink></ClickToSelect>
       )}
       {!local_player_stuff.createGameLoading &&
         !local_player_stuff.waitingForPlayer &&

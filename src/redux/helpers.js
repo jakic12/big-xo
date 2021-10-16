@@ -59,10 +59,17 @@ export const subscribeSocket =
     socket.emit(`subscribe_player`, { playerId, gameId });
     socket.on(
       "move",
-      ({ position, value, newCurrentPlayer, newActiveSmall }) => {
-        dispatch(move({ position, value, newCurrentPlayer, newActiveSmall }));
+      ({ position, value, newCurrentPlayer, newActiveSmall, smallWinner, bigWinner }) => {
+        console.log("someone moved!");
+        dispatch(move({ position, value, newCurrentPlayer, newActiveSmall, smallWinner, bigWinner }));
       }
     );
+    socket.on(`submit_move_failed`, () => {
+      dispatch(setGameData({err:`submit_move_failed`}));
+    })
+    socket.on(`player_disconnected`, () => {
+      dispatch(setGameData({err:`player disconnected`}));
+    })
     socket.on(`subscribe_player_success`, ({ playerId }) => {
       dispatch(setLocalPlayerState({ playerId }));
     });

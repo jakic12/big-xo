@@ -38,9 +38,10 @@ const InnerBlock = styled.div`
   display: flex;
   justify-content: center;
   align-items: center;
-  &:hover {
+  ${p => p.isClickable && `&:hover {
     cursor: pointer;
-  }
+    //background:rgba(255,255,255,0.2);
+  }`}
 
   ${(p) =>
     p.hover
@@ -65,6 +66,7 @@ const Overlay = styled.div`
   justify-content: center;
   align-items: center;
   background: rgba(33, 34, 38, 0);
+  pointer-events: none;
   ${(p) => {
     if (!p.active) {
       return `background: rgba(33, 34, 38, 0.7);`;
@@ -80,32 +82,36 @@ export default ({ size, pos, socket }) => {
   const gameState = useSelector((state) => state.gameState);
   const lps = useSelector((state) => state.lps);
   const [mouseInside, setMouseInside] = React.useState(false);
+  const [mouseInsideSquare, setMouseInsideSquare] = React.useState([]);
   const smallGridData = gameState.field.field[pos[0]][pos[1]];
   const show = smallGridData.won;
   const isMyTurn =
     gameState.players.indexOf(lps.playerId) == gameState.currentPlayer;
 
+  const currentActiveSmall = !gameState.activeSmall.length ||
+  gameState.activeSmall[0] == pos[0] &&
+  gameState.activeSmall[1] == pos[1];
+
   return (
     <WrapperWrapper
       size={size}
-      onMouseEnter={() => {
+      /*onMouseEnter={() => {
         setMouseInside(true);
       }}
       onMouseLeave={() => {
         setMouseInside(false);
-      }}
+      }}*/
     >
       <Overlay
         active={
-          gameState.activeSmall[0] == pos[0] &&
-          gameState.activeSmall[1] == pos[1]
+          currentActiveSmall
         }
       >
         {show == 1 && (
-          <FiCircle size={size + 40} color={`#3498db`} strokeWidth={0.5} />
+          <FiCircle style={{pointerEvents:`none`}} size={size + 40} color={`#3498db`} strokeWidth={0.5} />
         )}
         {show == 2 && (
-          <FiX size={size + 40} color={`#f14666`} strokeWidth={0.5} />
+          <FiX  style={{pointerEvents:`none`}} size={size + 40} color={`#f14666`} strokeWidth={0.5} />
         )}
       </Overlay>
       <Wrapper>
@@ -114,19 +120,34 @@ export default ({ size, pos, socket }) => {
             {smallGridData.field[i].map((__, j) => (
               <Column hover={mouseInside}>
                 <InnerBlock
+                  isClickable={isMyTurn && currentActiveSmall}
                   size={size}
                   hover={mouseInside}
                   onClick={() => {
-                    if (isMyTurn) {
+                    if (smallGridData.field[i][j] == 0 && isMyTurn && currentActiveSmall) {
                       socket.emit("submit_move", {
                         position: [pos[0], pos[1], i, j],
                       });
+                    }
+                  }}
+
+                  onMouseEnter={() => {
+                    if(smallGridData.field[i][j] == 0)
+                      setMouseInsideSquare([i, j]);
+                  }}
+                  onMouseLeave={() => {
+                    if(mouseInsideSquare[0] == i && mouseInsideSquare[1] == j){
+                      setMouseInsideSquare([]);
                     }
                   }}
                 >
                   {(() => {
                     return (
                       <>
+                        {smallGridData.field[i][j] == 0 && isMyTurn && currentActiveSmall && mouseInsideSquare[0] == i && mouseInsideSquare[1] == j && <>
+                          {gameState.currentPlayer == 0 && <FiCircle size={(size - 80) / 3} color={`rgba(52, 152, 219, 0.2)`} />}
+                          {gameState.currentPlayer == 1 && <FiX size={(size - 80) / 3} color={`rgba(241, 70, 102, 0.2)`} />}
+                        </>}
                         {smallGridData.field[i][j] == 1 && (
                           <FiCircle size={(size - 80) / 3} color={`#3498db`} />
                         )}

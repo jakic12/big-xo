@@ -137,7 +137,10 @@ io.on("connection", (socket) => {
         return;
       }
     } else {
-      const indexOfPlayer = (games[gameId] && games[gameId].players || []).indexOf(playerId);
+      const indexOfPlayer = (
+        (games[gameId] && games[gameId].players) ||
+        []
+      ).indexOf(playerId);
       if (indexOfPlayer != -1) {
         console.log(`${gameId} - subscribed player ${indexOfPlayer} socket`);
         games[gameId].sockets[indexOfPlayer] = socket;
@@ -150,124 +153,166 @@ io.on("connection", (socket) => {
   });
 
   socket.on("submit_move", (payload) => {
-    const {position} = payload;
+    const { position } = payload;
 
     console.log("move");
     console.log(socket.socketId, games[socket.gameId].activeSmall.length != 0);
 
-
-    if(!socket.gameId || !games[socket.gameId] || !("socketIndex" in socket) || !games[socket.gameId].sockets[socket.socketIndex] || games[socket.gameId].sockets[socket.socketIndex].socketId != socket.socketId || socket.socketIndex != games[socket.gameId].currentPlayer || (games[socket.gameId].activeSmall.length != 0 && (position[0] != games[socket.gameId].activeSmall[0] || position[1] != games[socket.gameId].activeSmall[1]))){
-
-      if(!games[socket.gameId].sockets[socket.socketIndex]){
+    if (
+      !socket.gameId ||
+      !games[socket.gameId] ||
+      !("socketIndex" in socket) ||
+      !games[socket.gameId].sockets[socket.socketIndex] ||
+      games[socket.gameId].sockets[socket.socketIndex].socketId !=
+        socket.socketId ||
+      socket.socketIndex != games[socket.gameId].currentPlayer ||
+      (games[socket.gameId].activeSmall.length != 0 &&
+        (position[0] != games[socket.gameId].activeSmall[0] ||
+          position[1] != games[socket.gameId].activeSmall[1]))
+    ) {
+      if (!games[socket.gameId].sockets[socket.socketIndex]) {
         console.log("fuck 1");
-      }else if(games[socket.gameId].sockets[socket.socketIndex].socketId != socket.socketId){
+      } else if (
+        games[socket.gameId].sockets[socket.socketIndex].socketId !=
+        socket.socketId
+      ) {
         console.log("fuck 2");
-      }else if(socket.socketIndex != games[socket.gameId].currentPlayer){
+      } else if (socket.socketIndex != games[socket.gameId].currentPlayer) {
         console.log("fuck 3");
-      }else if((games[socket.gameId].activeSmall.length != 0 && (position[0] != games[socket.gameId].activeSmall[0] || position[1] != games[socket.gameId].activeSmall[1]))){
+      } else if (
+        games[socket.gameId].activeSmall.length != 0 &&
+        (position[0] != games[socket.gameId].activeSmall[0] ||
+          position[1] != games[socket.gameId].activeSmall[1])
+      ) {
         console.log("fuck 4");
       }
 
-      console.log("submit_move_failed", games[socket.gameId].activeSmall.length != 0);
-      socket.emit("submit_move_failed", {err: `something in the socket saving system failed (probably, idk)`});
+      console.log(
+        "submit_move_failed",
+        games[socket.gameId].activeSmall.length != 0
+      );
+      socket.emit("submit_move_failed", {
+        err: `something in the socket saving system failed (probably, idk)`,
+      });
       return;
     }
 
-    games[socket.gameId] = calculateMove(position, games[socket.gameId], games[socket.gameId].sockets);
+    games[socket.gameId] = calculateMove(
+      position,
+      games[socket.gameId],
+      games[socket.gameId].sockets
+    );
   });
 });
 
 // -------------- SOCKET --------------
 
-
 const calculateMove = (position, gameState, socketsToInform) => {
-  if(gameState.field.field[position[0]][position[1]].field[position[2]][position[3]] != 0){
-    return {err:`field is not empty`};
+  if (
+    gameState.field.field[position[0]][position[1]].field[position[2]][
+      position[3]
+    ] != 0
+  ) {
+    return { err: `field is not empty` };
   }
 
-  gameState.field.field[position[0]][position[1]].field[position[2]][position[3]] = gameState.currentPlayer + 1;
-  newCurrentPlayer = (gameState.currentPlayer + 1)%2;
-  gameState.activeSmall = position.slice(2,4);
+  gameState.field.field[position[0]][position[1]].field[position[2]][
+    position[3]
+  ] = gameState.currentPlayer + 1;
+  newCurrentPlayer = (gameState.currentPlayer + 1) % 2;
+  gameState.activeSmall = position.slice(2, 4);
 
-
-  const smallWinner = checkWin(gameState.field.field[position[0]][position[1]].field);
+  const smallWinner = checkWin(
+    gameState.field.field[position[0]][position[1]].field
+  );
   gameState.field.field[position[0]][position[1]].won = smallWinner;
 
-  let bigWinner = checkWin(gameState.field.field, x => x.won);
+  let bigWinner = checkWin(gameState.field.field, (x) => x.won);
 
-  const smallFull = checkFull(gameState.field.field[position[0]][position[1]].field);
+  const smallFull = checkFull(
+    gameState.field.field[position[0]][position[1]].field
+  );
   gameState.field.field[position[0]][position[1]].full = smallFull;
-  const bigFull = checkFull(gameState.field.field, x => x.won || x.full);
+  const bigFull = checkFull(gameState.field.field, (x) => x.won || x.full);
 
-  if((bigWinner == 0 || !bigWinner) && bigFull){
+  if ((bigWinner == 0 || !bigWinner) && bigFull) {
     bigWinner = -1;
   }
 
-  if(gameState.field.field[gameState.activeSmall[0]][gameState.activeSmall[1]].full){
+  if (
+    gameState.field.field[gameState.activeSmall[0]][gameState.activeSmall[1]]
+      .full
+  ) {
     gameState.activeSmall = [];
   }
 
-  const socketPayload = {position, value:gameState.currentPlayer + 1, newCurrentPlayer , newActiveSmall: gameState.activeSmall, smallWinner, bigWinner, smallFull};
-  socketsToInform.forEach(socket => socket.emit("move", socketPayload));
+  const socketPayload = {
+    position,
+    value: gameState.currentPlayer + 1,
+    newCurrentPlayer,
+    newActiveSmall: gameState.activeSmall,
+    smallWinner,
+    bigWinner,
+    smallFull,
+  };
+  socketsToInform.forEach((socket) => socket.emit("move", socketPayload));
 
   gameState.currentPlayer = newCurrentPlayer;
   return gameState;
-}
+};
 
-const checkWin = (arr, valueFunction /* mapping from (arr[i][j]) -> (playerIndex) */) => {
-  if(!valueFunction)
-    valueFunction = x => x;
+const checkWin = (
+  arr,
+  valueFunction /* mapping from (arr[i][j]) -> (playerIndex) */
+) => {
+  if (!valueFunction) valueFunction = (x) => x;
 
-  for(let i = 0; i < arr.length; i++){
-    if(valueFunction(arr[i][0]) != 0){
+  for (let i = 0; i < arr.length; i++) {
+    if (valueFunction(arr[i][0]) != 0) {
       let win = true;
-      for(let t = 0; t < 3; t++){
-        if(valueFunction(arr[i][0]) != valueFunction(arr[i][t]))
-          win = false;
+      for (let t = 0; t < 3; t++) {
+        if (valueFunction(arr[i][0]) != valueFunction(arr[i][t])) win = false;
       }
-      if(win) return valueFunction(arr[i][0]);
+      if (win) return valueFunction(arr[i][0]);
     }
   }
 
-  for(let j = 0; j < arr[0].length; j++){
-    if(valueFunction(arr[0][j]) != 0){
+  for (let j = 0; j < arr[0].length; j++) {
+    if (valueFunction(arr[0][j]) != 0) {
       let win = true;
-      for(let t = 0; t < 3; t++){
-        if(valueFunction(arr[0][j]) != valueFunction(arr[t][j]))
-          win = false;
+      for (let t = 0; t < 3; t++) {
+        if (valueFunction(arr[0][j]) != valueFunction(arr[t][j])) win = false;
       }
-      if(win) return valueFunction(arr[0][j]);
+      if (win) return valueFunction(arr[0][j]);
     }
   }
 
   let win = true;
-  for(let t = 0; t < arr.length; t++){
-    if(valueFunction(arr[0][0]) != valueFunction(arr[t][t]))
-      win = false;
+  for (let t = 0; t < arr.length; t++) {
+    if (valueFunction(arr[0][0]) != valueFunction(arr[t][t])) win = false;
   }
-  if(win) return valueFunction(arr[0][0]);
+  if (win) return valueFunction(arr[0][0]);
 
   win = true;
-  for(let t = 0; t < arr.length; t++){
-    if(valueFunction(arr[0][2]) != valueFunction(arr[t][2- t]))
-      win = false;
+  for (let t = 0; t < arr.length; t++) {
+    if (valueFunction(arr[0][2]) != valueFunction(arr[t][2 - t])) win = false;
   }
-  if(win) return valueFunction(arr[0][2]);
+  if (win) return valueFunction(arr[0][2]);
 
   return 0;
-}
+};
 
 const checkFull = (arr, valueFunction) => {
-  if(!valueFunction) valueFunction = x => x;
-  for(let i = 0; i < arr.length; i++){
-    for(let j = 0; j < arr.length; j++){
-      if(!valueFunction(arr[i][j]) || valueFunction(arr[i][j]) == 0)
+  if (!valueFunction) valueFunction = (x) => x;
+  for (let i = 0; i < arr.length; i++) {
+    for (let j = 0; j < arr.length; j++) {
+      if (!valueFunction(arr[i][j]) || valueFunction(arr[i][j]) == 0)
         return false;
     }
   }
 
   return true;
-}
+};
 
 server.listen(port, () => {
   console.log(`Server listening on port: ${port}`);

@@ -1,23 +1,12 @@
 import React from "react";
-import BigTable from "./components/BigTable";
-
-import { HashRouter as Router, Switch, Route, Link } from "react-router-dom";
-import GameScreen from "./screens/gameScreen";
-import CreateGame from "./screens/createGame";
-import { io } from "socket.io-client";
-
-const socket = io(`http://localhost:5000/`);
+import { HashRouter as Router, Switch } from "react-router-dom";
+import SocketProvider from "./SocketProvider";
 
 const App = () => {
   return (
     <Router>
       <Switch>
-        <Route exact path="/">
-          <CreateGame socket={socket} />
-        </Route>
-        <Route exact path="/game/:gameId">
-          <GameScreen socket={socket} />
-        </Route>
+        <SocketProvider />
       </Switch>
     </Router>
   );

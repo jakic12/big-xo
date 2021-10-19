@@ -52,7 +52,9 @@ export default ({ socket }) => {
       <h1>Big boy XO</h1>
       <br />
       {local_player_stuff.done && (
-        <Redirect to={`/game/${local_player_stuff.createdGameId}`} />
+        <Redirect
+          to={`/game/${local_player_stuff.createdGameId}?server=${local_player_stuff.api_location}`}
+        />
       )}
       {local_player_stuff.createdGame && <div>game created!</div>}
       {local_player_stuff.waitingForPlayer && (
@@ -60,7 +62,7 @@ export default ({ socket }) => {
       )}
       {local_player_stuff.createdGame && (
         <ClickToSelect>
-          <AsLink>{`${window.location.href}game/${local_player_stuff.createdGameId}`}</AsLink>
+          <AsLink>{`${window.location.origin}/#/game/${local_player_stuff.createdGameId}?server=${local_player_stuff.api_location}`}</AsLink>
         </ClickToSelect>
       )}
       {!local_player_stuff.createGameLoading &&

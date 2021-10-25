@@ -92,6 +92,8 @@ export default ({ size, pos, socket }) => {
   gameState.activeSmall[0] == pos[0] &&
   gameState.activeSmall[1] == pos[1];
 
+  const smallSize = (size > 150)? (size - 80)/3 : size/3;
+
   return (
     <WrapperWrapper
       size={size}
@@ -145,14 +147,14 @@ export default ({ size, pos, socket }) => {
                     return (
                       <>
                         {smallGridData.field[i][j] == 0 && isMyTurn && currentActiveSmall && mouseInsideSquare[0] == i && mouseInsideSquare[1] == j && <>
-                          {gameState.currentPlayer == 0 && <FiCircle size={(size - 80) / 3} color={`rgba(52, 152, 219, 0.2)`} />}
-                          {gameState.currentPlayer == 1 && <FiX size={(size - 80) / 3} color={`rgba(241, 70, 102, 0.2)`} />}
+                          {gameState.currentPlayer == 0 && <FiCircle size={smallSize} color={`rgba(52, 152, 219, 0.2)`} />}
+                          {gameState.currentPlayer == 1 && <FiX size={smallSize} color={`rgba(241, 70, 102, 0.2)`} />}
                         </>}
                         {smallGridData.field[i][j] == 1 && (
-                          <FiCircle size={(size - 80) / 3} color={`#3498db`} />
+                          <FiCircle size={smallSize} color={`#3498db`} />
                         )}
                         {smallGridData.field[i][j] == 2 && (
-                          <FiX size={(size - 80) / 3} color={`#f14666`} />
+                          <FiX size={smallSize} color={`#f14666`} />
                         )}
                       </>
                     );

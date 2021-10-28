@@ -6,14 +6,14 @@ import { fetchGame, subscribeSocket } from "../redux/helpers";
 import styled from "styled-components";
 
 const WinnerOverlay = styled.div`
-  position:absolute;
-  left:0;
-  top:0;
-  right:0;
-  bottom:0;
-  background: rgba(0,0,0,0.5);
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
 
-  display:flex;
+  display: flex;
   justify-content: center;
   align-items: center;
 
@@ -58,13 +58,36 @@ export default ({ socket }) => {
     return <div style={{ color: `white` }}>fetching player id</div>;
   }
 
-  if (gameState.id) return <>
-    <BigTable socket={socket} />
-    {(gameState.winner != 0 && gameState.winner && gameState.winner != false) && <>
-      {gameState.players.indexOf(lps.playerId) == gameState.winner - 1 && <WinnerOverlay style={{color:`#2ecc71`}}>You won :)</WinnerOverlay>}
-      {gameState.winner == -1 && <WinnerOverlay style={{color:`#2ecc71`}}>It's a tie :/</WinnerOverlay>}
-      {gameState.players.indexOf(lps.playerId) != gameState.winner - 1 && <WinnerOverlay style={{color:`#f14666`}}>You lost :(</WinnerOverlay>}
-    </>}
-  </>;
+  if (gameState.id)
+    return (
+      <>
+        <BigTable socket={socket} />
+        {gameState.winner != 0 &&
+          gameState.winner &&
+          gameState.winner != false && (
+            <>
+              {gameState.winner == -1 && (
+                <WinnerOverlay style={{ color: `#2ecc71` }}>
+                  It's a tie :/
+                </WinnerOverlay>
+              )}
+              {gameState.winner != -1 &&
+                gameState.players.indexOf(lps.playerId) ==
+                  gameState.winner - 1 && (
+                  <WinnerOverlay style={{ color: `#2ecc71` }}>
+                    You won :)
+                  </WinnerOverlay>
+                )}
+              {gameState.winner != -1 &&
+                gameState.players.indexOf(lps.playerId) !=
+                  gameState.winner - 1 && (
+                  <WinnerOverlay style={{ color: `#f14666` }}>
+                    You lost :(
+                  </WinnerOverlay>
+                )}
+            </>
+          )}
+      </>
+    );
   return <div>loading</div>;
 };

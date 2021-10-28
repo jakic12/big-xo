@@ -60,7 +60,7 @@ app.get("/game/:gameId", (req, res) => {
   }
 
   if (playerId) {
-    if (games[gameId].players.includes(playerId)) {
+    if (playerId == `spectator` || games[gameId].players.includes(playerId)) {
       res.json({
         game: Object.assign({}, games[gameId], { sockets: undefined }),
       });
@@ -130,9 +130,9 @@ io.on("connection", (socket) => {
         return;
       }
       if (games[gameId].players.length >= 2) {
-        console.error("socket connected to a full game");
-        socket.emit("subscribe_player_error", {
-          err: "socket connected to a full game",
+        games[gameId].sockets.push(socket);
+        socket.emit("subscribe_player_success", {
+          playerId: `spectator`,
         });
         return;
       }
@@ -141,7 +141,8 @@ io.on("connection", (socket) => {
         (games[gameId] && games[gameId].players) ||
         []
       ).indexOf(playerId);
-      if (indexOfPlayer != -1) {
+      if (playerId == `spectator`) {
+      } else if (indexOfPlayer != -1) {
         console.log(`${gameId} - subscribed player ${indexOfPlayer} socket`);
         games[gameId].sockets[indexOfPlayer] = socket;
         socket.gameId = gameId;
@@ -156,7 +157,7 @@ io.on("connection", (socket) => {
     const { position } = payload;
 
     console.log("move");
-    console.log(socket.socketId, games[socket.gameId].activeSmall.length != 0);
+    console.log(socket.socketId, position, games);
 
     if (
       !socket.gameId ||
@@ -222,10 +223,13 @@ const calculateMove = (position, gameState, socketsToInform) => {
   newCurrentPlayer = (gameState.currentPlayer + 1) % 2;
   gameState.activeSmall = position.slice(2, 4);
 
-  const smallWinner = checkWin(
-    gameState.field.field[position[0]][position[1]].field
-  );
-  gameState.field.field[position[0]][position[1]].won = smallWinner;
+  let smallWinner = gameState.field.field[position[0]][position[1]].won;
+  if (!smallWinner) {
+    smallWinner = checkWin(
+      gameState.field.field[position[0]][position[1]].field
+    );
+    gameState.field.field[position[0]][position[1]].won = smallWinner;
+  }
 
   let bigWinner = checkWin(gameState.field.field, (x) => x.won);
 
@@ -258,6 +262,9 @@ const calculateMove = (position, gameState, socketsToInform) => {
   socketsToInform.forEach((socket) => socket.emit("move", socketPayload));
 
   gameState.currentPlayer = newCurrentPlayer;
+
+  if (bigWinner != 0) return null;
+
   return gameState;
 };
 

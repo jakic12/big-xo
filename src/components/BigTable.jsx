@@ -34,8 +34,18 @@ const InnerBlock = styled.div`
   box-sizing:border-box;
 `;
 
+const TurnDisplay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  padding: 2em;
+  color: white;
+`;
+
 export default ({ socket }) => {
-  const gameState = useSelector((state) => state.gameState);
+  const { gameState, lps } = useSelector((state) => state);
+  const isMyTurn =
+    gameState.players.indexOf(lps.playerId) == gameState.currentPlayer;
 
   const smallSize =
     (Math.min(window.innerHeight, window.innerWidth) - 10 - 20 * 2) / 3;
@@ -43,6 +53,13 @@ export default ({ socket }) => {
   console.log(gameState);
   return (
     <WrapperWrapper>
+      <TurnDisplay current={gameState.currentPlayer}>
+        {lps.playerId == `spectator`
+          ? `spectator`
+          : isMyTurn
+          ? `your turn`
+          : `not your turn`}
+      </TurnDisplay>
       <Wrapper>
         {gameState.field.field &&
           gameState.field.field.map((_, big_i) => (

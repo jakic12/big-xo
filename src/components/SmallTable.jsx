@@ -15,7 +15,7 @@ const Wrapper = styled.table`
 `;
 
 const Row = styled.tr`
-  border: 3px solid rgba(255, 255, 255, 0.2);
+  border: 3px solid #4d4e51;
   ${(p) =>
     p.hover &&
     `
@@ -25,7 +25,7 @@ const Row = styled.tr`
 `;
 
 const Column = styled.td`
-  border: 3px solid rgba(255, 255, 255, 0.2);
+  border: 3px solid #4d4e51;
   ${(p) =>
     p.hover &&
     `

@@ -14,11 +14,11 @@ const Wrapper = styled.table`
 `;
 
 const Row = styled.tr`
-  border: 5px solid white;
+  border: 0.3em solid white;
 `;
 
 const Column = styled.td`
-  border: 5px solid white; ;
+  border: 0.3em solid white;
 `;
 
 const InnerBlock = styled.div`

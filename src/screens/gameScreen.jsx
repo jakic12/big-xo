@@ -3,6 +3,7 @@ import { useParams, Redirect } from "react-router-dom";
 import BigTable from "../components/BigTable";
 import { useSelector, useDispatch } from "react-redux";
 import { fetchGame, subscribeSocket } from "../redux/helpers";
+import { FiCircle, FiX } from "react-icons/fi";
 import styled from "styled-components";
 
 const WinnerOverlay = styled.div`
@@ -66,25 +67,54 @@ export default ({ socket }) => {
           gameState.winner &&
           gameState.winner != false && (
             <>
-              {gameState.winner == -1 && (
-                <WinnerOverlay style={{ color: `#2ecc71` }}>
-                  It's a tie :/
-                </WinnerOverlay>
+              {lps.playerId != `spectator` && (
+                <>
+                  {gameState.winner == -1 && (
+                    <WinnerOverlay style={{ color: `#2ecc71` }}>
+                      It's a tie :/
+                    </WinnerOverlay>
+                  )}
+                  {gameState.winner != -1 &&
+                    gameState.players.indexOf(lps.playerId) ==
+                      gameState.winner - 1 && (
+                      <WinnerOverlay style={{ color: `#2ecc71` }}>
+                        You won :)
+                      </WinnerOverlay>
+                    )}
+                  {gameState.winner != -1 &&
+                    gameState.players.indexOf(lps.playerId) !=
+                      gameState.winner - 1 && (
+                      <WinnerOverlay style={{ color: `#f14666` }}>
+                        You lost :(
+                      </WinnerOverlay>
+                    )}
+                </>
               )}
-              {gameState.winner != -1 &&
-                gameState.players.indexOf(lps.playerId) ==
-                  gameState.winner - 1 && (
-                  <WinnerOverlay style={{ color: `#2ecc71` }}>
-                    You won :)
-                  </WinnerOverlay>
-                )}
-              {gameState.winner != -1 &&
-                gameState.players.indexOf(lps.playerId) !=
-                  gameState.winner - 1 && (
-                  <WinnerOverlay style={{ color: `#f14666` }}>
-                    You lost :(
-                  </WinnerOverlay>
-                )}
+              {lps.playerId == `spectator` && (
+                <>
+                  {gameState.winner == -1 && (
+                    <WinnerOverlay style={{ color: `#2ecc71` }}>
+                      It's a tie :/
+                    </WinnerOverlay>
+                  )}
+                  {gameState.winner == 0 && (
+                    <WinnerOverlay style={{ color: `#3498db` }}>
+                      <FiCircle
+                        style={{ margin: `0.3em` }}
+                        size={`1.5em`}
+                        color={`#3498db`}
+                      />
+                      <>won</>
+                    </WinnerOverlay>
+                  )}
+                  {gameState.winner == 1 && (
+                    <WinnerOverlay style={{ color: `#f14666` }}>
+                      <FiX size={`1.5em`} color={`#f14666`} />
+                      <>won</>
+                    </WinnerOverlay>
+                  )}
+                </>
+              )}
             </>
           )}
       </>

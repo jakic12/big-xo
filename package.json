@@ -4,7 +4,7 @@
   "description": "big-xo",
   "main": "index.js",
   "scripts": {
-    "start": "webpack serve  --hot --open",
+    "start": "webpack serve  --hot --open --allowed-hosts .grnet.gr",
     "build": "webpack --config webpack.config.js --mode production"
   },
   "repository": {

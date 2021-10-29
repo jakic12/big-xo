@@ -97,7 +97,7 @@ export default ({ socket }) => {
                       It's a tie :/
                     </WinnerOverlay>
                   )}
-                  {gameState.winner == 0 && (
+                  {gameState.winner == 1 && (
                     <WinnerOverlay style={{ color: `#3498db` }}>
                       <FiCircle
                         style={{ margin: `0.3em` }}
@@ -107,7 +107,7 @@ export default ({ socket }) => {
                       <>won</>
                     </WinnerOverlay>
                   )}
-                  {gameState.winner == 1 && (
+                  {gameState.winner == 2 && (
                     <WinnerOverlay style={{ color: `#f14666` }}>
                       <FiX size={`1.5em`} color={`#f14666`} />
                       <>won</>

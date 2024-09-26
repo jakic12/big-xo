@@ -6,7 +6,7 @@ const default_state = {
   createdGame: false,
   waitingForPlayer: false,
   done: false,
-  api_location: `http://localhost:5000/`,
+  api_location: process.env.API_LOCATION,
   createdGameId: false,
 };
 
@@ -17,10 +17,10 @@ export const local_stuff = createSlice({
     setState: (state, action) => {
       Object.assign(state, action.payload);
     },
-    resetState:(state) => {
+    resetState: (state) => {
       Object.keys(state).forEach((key) => {
         delete state[key];
-      })
+      });
 
       Object.assign(state, default_state);
     },

@@ -1,6 +1,6 @@
 import { setState as setLocalPlayerState } from "./redux/local_player_stuff";
 
-const api_location = `http://localhost:5000/`;
+const api_location = process.env.API_LOCATION;
 
 export const createGame = () =>
   new Promise((res, rej) => {

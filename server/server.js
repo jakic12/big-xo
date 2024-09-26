@@ -25,8 +25,8 @@ app.use(
   })
 );
 
-app.get("/", (req, res) => {
-  res.send("Hello 1i234-0i230-4i23-0i-!");
+app.get("/status", (req, res) => {
+  res.send("80f2025a5fe5aec78987425bc68d2a86");
 });
 
 /**

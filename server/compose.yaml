@@ -1,11 +1,11 @@
+# port 5000
+
 services:
   big-xo-server:
     build:
       context: .
     environment:
       NODE_ENV: production
-    ports:
-      - 4783:5000
 
 networks:
   default:

@@ -10,5 +10,5 @@ services:
 networks:
   default:
     name: ${NETWORK_NAME}
-    driver: ${NETWORK_NAME+driver}
+    driver: ${NETWORK_NAME+bridge}
     external: ${NETWORK_NAME+true}

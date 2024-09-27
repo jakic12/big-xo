@@ -6,3 +6,9 @@ services:
       NODE_ENV: production
     ports:
       - 4783:5000
+
+networks:
+  default:
+    name: ${NETWORK_NAME}
+    driver: ${NETWORK_NAME+driver}
+    external: ${NETWORK_NAME+true}
